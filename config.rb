@@ -11,10 +11,15 @@ end
 # Output to docs, for Github Pages use
 set :build_dir, '../rock-monkey/'
 
-# Per-page layout changes
-page '/*.xml', layout: false
-page '/*.json', layout: false
-page '/*.txt', layout: false
+# Load classes
+Dir.glob('./lib/*.rb', &method(:require))
+
+# Wiki pages
+Page.all.each do |page|
+  proxy "/#{page.tag}/index.html", "/template.html", locals: { page: page }
+end
+proxy "/index.html", "/template.html", locals: { page: Page.find_by_tag('HomePage') }
+ignore "/template.html"
 
 # With alternative layout
 # page '/path/to/file.html', layout: 'other_layout'

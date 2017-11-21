@@ -1,0 +1,26 @@
+<script type="" id="raw">
+  <%= j page.body %>
+</script>
+
+<article>
+  <header>
+    <h2><%= page.tag %></h2>
+  </header>
+  <section>
+    <%= page.formatted %>
+  </section>
+  <footer>
+    <% if (page.owner || '') =~ /^[A-Z][a-z]/ %>
+      Created by <a href="/<%= page.owner %>"><%= page.owner %></a> |
+    <% elsif (page.owner || '') != '' %>
+      Created by <%= page.owner %> |
+    <% end %>
+    Updated
+    <%= page.time %>
+    <% if (page.user || '') =~ /^[A-Z][a-z]/ %>
+      by <a href="/<%= page.user %>"><%= page.user %></a>
+    <% elsif (page.user || '') != '' %>
+      by <%= page.user %>
+    <% end %>
+  </footer>
+</article>
