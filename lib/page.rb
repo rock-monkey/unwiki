@@ -34,11 +34,12 @@ class Page
 
   def formatted
     result = h(@body)
-    # Add warning if using unsupported shortcodes
+    # Fix known broken images
     URL_REMAPS.each do |from, to|
       result.gsub!(from, to)
     end
-    result = %{<div class="wikigame-shortcodes">This page used WikiGameToolkit shortcodes, which are not supported in this version of the site.</div>#{result}} if WIKIGAME_SHORTCODES.any?{|code| result =~ /\{\{#{code}\}\}/i}
+    # Add warning if using unsupported shortcodes
+    result = %{<div class="wikigame-shortcodes">This page used WikiGameToolkit shortcodes, which are not supported in this version of the site.</div>#{result}} if WIKIGAME_SHORTCODES.any?{|code| result =~ /\{\{#{code}/i}
     # Pre-process by fixing windows line endings
     result.gsub!(/\r\n/, "\n")
     # Downcasify all shortcodes to protect them from being turned into links
