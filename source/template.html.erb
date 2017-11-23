@@ -1,10 +1,8 @@
-<script type="" id="raw">
-  <%= j page.body %>
-</script>
+<script type="text/plain" id="raw"><%= h(page.body) %></script>
 
 <article>
   <header>
-    <h2><%= page.tag %></h2>
+    <h2><%= page.friendly_tag %></h2>
   </header>
   <section>
     <%= page.formatted %>

@@ -5,7 +5,20 @@ class Page
 
   WIKIGAME_SHORTCODES = %w{invhasall invhasone invhasnone invpickup invdrop settoken gettoken test}
   URL_REMAPS = {
-    'http://www.scatmania.org/wp-content/paul_zippy.jpg' => '/images/paul_zippy.jpg'
+    'http://www.scatmania.org/wp-content/paul_zippy.jpg'        => '/images/paul_zippy.jpg',
+    'http://www.cleanstick.org/jon/junk/game/3waysplit.gif'     => '/images/wikimaze/3waysplit.gif',
+    'http://www.cleanstick.org/jon/junk/game/blank.gif'         => '/images/wikimaze/blank.gif',
+    'http://www.cleanstick.org/jon/junk/game/enemy.gif'         => '/images/wikimaze/enemy.gif',
+    'http://www.cleanstick.org/jon/junk/game/forwardeft.gif'    => '/images/wikimaze/forwardeft.gif',
+    'http://www.cleanstick.org/jon/junk/game/forwardleft.gif'   => '/images/wikimaze/forwardleft.gif',
+    'http://www.cleanstick.org/jon/junk/game/forwardright.gif'  => '/images/wikimaze/forwardright.gif',
+    'http://www.cleanstick.org/jon/junk/game/goal.gif'          => '/images/wikimaze/goal.gif',
+    'http://www.cleanstick.org/jon/junk/game/left.gif'          => '/images/wikimaze/left.gif',
+    'http://www.cleanstick.org/jon/junk/game/lesbians.gif'      => '/images/wikimaze/lesbians.gif',
+    'http://www.cleanstick.org/jon/junk/game/right.gif'         => '/images/wikimaze/right.gif',
+    'http://www.cleanstick.org/jon/junk/game/straighton.gif'    => '/images/wikimaze/straighton.gif',
+    'http://www.cleanstick.org/jon/junk/game/tjunction.gif'     => '/images/wikimaze/tjunction.gif',
+    'http://www.cleanstick.org/jon/junk/game/tubgirl.gif'       => '/images/wikimaze/tubgirl.gif'
   }
 
   attr_reader :id, :tag, :time, :body, :owner, :user, :read_acl, :write_acl, :comment_acl
@@ -26,8 +39,20 @@ class Page
     all.select{|page| page.body =~ /(\W|^)#{word}(\W|$)/}
   end
 
+  def self.user_names
+    @@user_names ||= (all.map(&:user) + all.map(&:owner)).uniq
+  end
+
   def initialize(row)
     @id, @tag, @time, @body, @owner, @user, @read_acl, @write_acl, @comment_acl = row
+  end
+
+  def friendly_tag
+    # friendly pages are those whose names can be separated by spaced
+    is_friendly = false
+    is_friendly = true if Page.user_names.include?(tag)
+    is_friendly = true if tag =~ /([A-Z][a-z]+){3,}/
+    is_friendly ? (tag.gsub(/([A-Z])/, ' \1').strip) : tag
   end
 
   def comments
@@ -40,12 +65,12 @@ class Page
     URL_REMAPS.each do |from, to|
       result.gsub!(from, to)
     end
-    # Add warning if using unsupported shortcodes
-    result = %{<div class="wikigame-shortcodes">This page used WikiGameToolkit shortcodes, which are not supported in this version of the site.</div>#{result}} if WIKIGAME_SHORTCODES.any?{|code| result =~ /\{\{#{code}/i}
     # Pre-process by fixing windows line endings
     result.gsub!(/\r\n/, "\n")
     # Downcasify all shortcodes to protect them from being turned into links
     result.gsub!(/\{\{.*\}\}/){|shortcode| shortcode.downcase}
+    # Add warning if using unsupported shortcodes
+    result = %{<div class="wikigame-shortcodes">This page used WikiGameToolkit shortcodes, which are not supported in this version of the site.</div>#{result}} if WIKIGAME_SHORTCODES.any?{|code| result =~ /\{\{#{code}/}
     # Strip duplicate page titles
     result.gsub!(/^[^\n]*=+ *#{@tag} *=+[^\n]*/, '')
     # Strip leading/trailing newlines
@@ -75,33 +100,33 @@ class Page
     result.gsub!(/\[\[.+?\]\]|([A-Z][a-z0-9]+)([A-Z][a-z0-9]*)+/) do |link|
       link = link.gsub(/[\[\[\]\]]/, '').split(' ', 2)
       classes = []
-      unless Page.find_by_tag(link[0])
-        # broken link; attempt obvious fixes
-        if Page.find_by_tag(link[0].capitalize)
-          # fixed it!
-          link[1] ||= link[0]
-          link[0] = link[0].capitalize
-          classes << 'auto-fixed'
-        else
-          # nope; still broken - let's try something else
-          if alt_page = Page.all.select{|page| page.tag.downcase == link[0].downcase}[0]
-            # phew! that worked
-            link[1] ||= link[0]
-            link[0] = alt_page.tag
-            classes << 'auto-fixed'
-          else
-            # still nothing? damn: let's give up!
-            (@@missing_pages ||= []) << link[0]
-            classes << 'broken'
-          end
-        end
-      end
       if link[0] =~ /^https?:/
         url = link[0]
         classes << 'external'
       else
         url = "/#{link[0]}"
         classes << 'internal'
+        unless Page.find_by_tag(link[0])
+          # broken link; attempt obvious fixes
+          if Page.find_by_tag(link[0].capitalize)
+            # fixed it!
+            link[1] ||= link[0]
+            link[0] = link[0].capitalize
+            classes << 'auto-fixed'
+          else
+            # nope; still broken - let's try something else
+            if alt_page = Page.all.select{|page| page.tag.downcase == link[0].downcase}[0]
+              # phew! that worked
+              link[1] ||= link[0]
+              link[0] = alt_page.tag
+              classes << 'auto-fixed'
+            else
+              # still nothing? damn: let's give up!
+              (@@missing_pages ||= []) << link[0]
+              classes << 'broken'
+            end
+          end
+        end
       end
       %{<a href="#{url}" class="#{classes.join(' ')}">#{link[1] || link[0]}</a>}
     end

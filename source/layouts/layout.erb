@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title><%= page.tag %> | Rockmonkey</title>
+    <title><%= page ? page.friendly_tag : title %> | Rockmonkey</title>
     <%= stylesheet_link_tag "site" %>
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-110134660-1"></script>
     <script>
@@ -22,6 +22,9 @@
     </main>
     <footer>
       <a href="https://creativecommons.org/publicdomain/zero/1.0/" rel="license"><img src="/images/cc0.png" alt="CC0 - Public Domain" /></a>
+      <% if page %>
+      <a href="#" class="show-raw">Show Raw</a>
+      <% end %>
     </footer>
 
     <%= javascript_include_tag "site" %>

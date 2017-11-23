@@ -7,6 +7,25 @@ a {
   &:hover {
     color: #076b84;
   }
+
+  &.broken {
+    color: #e41a00;
+    &::before {
+      content: "💥";
+    }
+  }
+
+  &.external::before {
+    content: "🔗";
+  }
+}
+
+body .js {
+  display: none;
+}
+
+body.js .js {
+  display: inherit;
 }
 
 aside {
@@ -52,6 +71,12 @@ body {
     }
   }
 
+  & > footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
   & > main {
     pading: 15px 0;
 
@@ -73,3 +98,17 @@ body {
   }
 }
 
+img.right {
+  float: right;
+  margin: 15px 0 15px 15px;
+}
+
+img.left {
+  float: left;
+  margin: 15px 15px 15px 0;
+}
+
+img.centre, img.center {
+  display: block;
+  margin: auto;
+}
