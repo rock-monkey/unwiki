@@ -1,3 +1,5 @@
+require 'erb'
+
 class Page
   include ERB::Util
 
@@ -51,21 +53,22 @@ class Page
     result.gsub!(/\n+$/, '')
     # Process wiki code
     result.gsub!(/\n+----+\n+/, '<hr />')
+    result.gsub!(/\n*&gt;&gt;(.+?)&gt;&gt;\n*/m, '<aside>\1</aside>')
     result.gsub!(/''(.+?)''/, '<strong class="highlight">\1</strong>')
     result.gsub!(/\*\*(.+?)\*\*/, '<strong>\1</strong>')
-    result.gsub!(/\/\/(.+?)\/\//, '<em>\1</em>')
+    result.gsub!(/([^:])\/\/(.*[^:])\/\//, '\1<em>\2</em>')
     result.gsub!(/##(.+?)##/, '<pre>\1</pre>')
     result.gsub!(/%%(.+?)%%/, '<pre>\1</pre>')
     result.gsub!(/\+\+(.+?)\+\+/, '<strike>\1</strike>')
     result.gsub!(/__(.+?)__/, '<u>\1</u>')
     result.gsub!(/@@(.+?)@@/, '<center>\1</center>')
-    result.gsub!(/#%(.+?)#%/, '<div class="button">\1</div>')
-    result.gsub!(/={6} *(.+?) *={6}\n*/, '<h1>\1</h1>')
-    result.gsub!(/={5} *(.+?) *={5}\n*/, '<h2>\1</h2>')
-    result.gsub!(/={4} *(.+?) *={4}\n*/, '<h3>\1</h3>')
-    result.gsub!(/={3} *(.+?) *={3}\n*/, '<h4>\1</h4>')
-    result.gsub!(/={2} *(.+?) *={2}\n*/, '<h5>\1</h5>')
-    result.gsub!(/(~- *([^\n]*))(\n *~-([^\n]*))*/) do |list|
+    result.gsub!(/\n*#%(.+?)#%\n*/, '<div class="button">\1</div>')
+    result.gsub!(/\n*={6} *(.+?) *={6}\n*/, '<h1>\1</h1>')
+    result.gsub!(/\n*={5} *(.+?) *={5}\n*/, '<h2>\1</h2>')
+    result.gsub!(/\n*={4} *(.+?) *={4}\n*/, '<h3>\1</h3>')
+    result.gsub!(/\n*={3} *(.+?) *={3}\n*/, '<h4>\1</h4>')
+    result.gsub!(/\n*={2} *(.+?) *={2}\n*/, '<h5>\1</h5>')
+    result.gsub!(/\n*(~- *([^\n]*))(\n *~-([^\n]*))*\n*/) do |list|
       items = list.gsub('~-', '<li>').gsub("\n", '</li>')
       "<ul>#{items}</ul>"
     end

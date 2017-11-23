@@ -16,7 +16,7 @@
       Created by <%= page.owner %> |
     <% end %>
     Updated
-    <%= page.time %>
+    <%= page.time.split('.')[0] %>
     <% if (page.user || '') =~ /^[A-Z][a-z]/ %>
       by <a href="/<%= page.user %>"><%= page.user %></a>
     <% elsif (page.user || '') != '' %>

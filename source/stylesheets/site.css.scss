@@ -1,16 +1,75 @@
-body {
-  background: #fff;
-  color: #000;
-}
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700,700i');
 
 a {
+  color: #0992b5;
 
   &:focus,
   &:hover {
+    color: #076b84;
   }
 }
 
-textarea {
-  width: 100%;
-  min-height: 26em;
+aside {
+  background: #f4f4f4;
+  float: right;
+  width: 30%;
 }
+
+body {
+  background: #ffffff;
+  color: #0c0408;
+  display: flex;
+  flex-direction: column;
+  margin: 15px;
+  align-items: center;
+  font-family: 'Open Sans', sans-serif;
+  box-sizing: border-box;
+
+  & > * {
+    width: 95%;
+    max-width: 980px;    
+  }
+
+  & > header,
+  & > footer {
+    background: #517438;
+    color: #f4f4f4;
+    padding: 15px;
+
+    h1 {
+      margin: 0;
+    }
+
+    a {
+      color: #ffffff;
+      text-decoration: none;
+
+      &:focus,
+      &:hover {
+        color: #ffffff;
+        text-decoration: underline;
+      }
+    }
+  }
+
+  & > main {
+    pading: 15px 0;
+
+    header {
+      margin: 15px 0;
+
+      h2 {
+        margin: 0;
+      }
+    }
+
+    footer {
+      clear: both;
+      text-align: center;
+      font-size: 80%;
+      color: gray;
+      padding: 8px 0 15px;
+    }
+  }
+}
+

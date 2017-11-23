@@ -1,3 +1,5 @@
+require 'sqlite3'
+
 class DB
   def self.db
     @@db ||= SQLite3::Database.new "db.sqlite3"
