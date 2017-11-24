@@ -201,7 +201,7 @@ class Page
         image
       elsif code == 'category'
         page_tags = Page.find_all_containing_word(@tag).map(&:tag)
-        lis = page_tags.map{|t| %{<li><a href="/#{t}">#{t}</a></li>} }.join('')
+        lis = page_tags.map{|t| %{<li>#{t}</li>} }.join('')
         %{<ul>#{lis}</ul>}
       elsif code == 'wantedpages'
         File.exists?('tmp/wantedpages.html') ? File.read('tmp/wantedpages.html') : ''
