@@ -4,6 +4,7 @@ class Page
   include ERB::Util
 
   WIKIGAME_SHORTCODES = %w{invhasall invhasone invhasnone invpickup invdrop settoken gettoken test}
+  OTHER_UNSUPPORTED_SHORTCODES = %w{nocomments}
   URL_REMAPS = {
     'http://www.scatmania.org/wp-content/paul_zippy.jpg'                                    => '/images/paul_zippy.jpg',
     'http://www.cleanstick.org/jon/junk/game/3waysplit.gif'                                 => '/images/wikimaze/3waysplit.gif',
@@ -118,7 +119,7 @@ class Page
   end
 
   def self.missing_pages
-    @@missing_pages || []
+    @@missing_pages ||= []
   end
 
   def self.find_all_containing_word(word)
@@ -187,7 +188,31 @@ class Page
       items = list.gsub('~-', '<li>').gsub("\n", '</li>')
       "<ul>#{items}</ul>"
     end
-    result.gsub!(/\[\[.+?\]\]|([A-Z][a-z0-9]+)([A-Z][a-z0-9]*)+/) do |link|
+    result.gsub!(/\n/, "<br />\n")
+    result.gsub!(/(<br \/>\n){2,}</, "<br />\n<")
+    result.gsub!(/\{\{(.+?)( +(.+?)=&quot;(.+?)&quot;)*\}\}/) do |shortcode|
+      code, params = shortcode[2...-2].split(/\s/, 2)
+      params = (params || '').scan(/ *(.+?)=&quot;(.+?)&quot;/) || []
+      params = Hash.new.tap{ |h| params.each{ |k,v| h[k] = v } }
+      if code == 'image'
+        alt = (params['alt'] || '').gsub(/([A-Z])/, ' \1').strip # break up ALL WikiWords in alt text to prevent links being 'made' there
+        image = %{<img src="#{params['url']}" alt="#{alt}" class="#{params['class']}" />}
+        image = %{<a href="/#{params['link']}">#{image}</a>} if(params['link'])
+        image
+      elsif code == 'category'
+        page_tags = Page.find_all_containing_word(@tag).map(&:tag)
+        lis = page_tags.map{|t| %{<li><a href="/#{t}">#{t}</a></li>} }.join('')
+        %{<ul>#{lis}</ul>}
+      elsif code == 'wantedpages'
+        File.exists?('tmp/wantedpages.html') ? File.read('tmp/wantedpages.html') : ''
+      elsif WIKIGAME_SHORTCODES.include?(code) || OTHER_UNSUPPORTED_SHORTCODES.include?(code)
+        # drop
+      else
+        "<div>UNKNOWN SHORTCODE: #{code} (#{h(params.inspect)})</div>"
+      end
+    end
+    # Wiki Links (WikiWords and [[]]-syntax)
+    result.gsub!(/\[\[.+?\]\]|(?<![\/])([A-Z][a-z0-9]+)([A-Z][a-z0-9]*)+/) do |link|
       link = link.gsub(/[\[\[\]\]]/, '').split(' ', 2)
       link[1] ||= link[0]
       # friendlify link text if possible
@@ -228,26 +253,6 @@ class Page
         end
       end
       %{<a href="#{url}" class="#{classes.join(' ')}">#{link[1]}</a>}
-    end
-    result.gsub!(/\n/, "<br />\n")
-    result.gsub!(/(<br \/>\n){2,}</, "<br />\n<")
-    result.gsub!(/\{\{(.+?)( +(.+?)=&quot;(.+?)&quot;)*\}\}/) do |shortcode|
-      code, params = shortcode[2...-2].split(/\s/, 2)
-      params = (params || '').scan(/ *(.+?)=&quot;(.+?)&quot;/) || []
-      params = Hash.new.tap{ |h| params.each{ |k,v| h[k] = v } }
-      if code == 'image'
-        image = %{<img src="#{params['url']}" alt="#{params['alt']}" class="#{params['class']}" />}
-        image = %{<a href="/#{params['link']}">#{image}</a>} if(params['link'])
-        image
-      elsif code == 'category'
-        page_tags = Page.find_all_containing_word(@tag).map(&:tag)
-        lis = page_tags.map{|t| %{<li><a href="/#{t}">#{t}</a></li>} }.join('')
-        %{<ul>#{lis}</ul>}
-      elsif WIKIGAME_SHORTCODES.include?(code)
-        # drop
-      else
-        "<div>UNKNOWN SHORTCODE: #{code} (#{h(params.inspect)})</div>"
-      end
     end
     # Add comments
     if comments.length > 0

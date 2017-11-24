@@ -21,6 +21,13 @@ end
 proxy "/index.html", "/template.html", locals: { page: Page.find_by_tag('HomePage') }
 ignore "/template.html"
 
+# Write wanted pages list so that future passes can use it
+File.open('tmp/wantedpages.html', 'w') do |f|
+  f.puts '<ul>'
+  f.puts Page.missing_pages.map{|tag| "<li>#{tag}</li>" }.join("\n")
+  f.puts '</ul>'
+end
+
 # With alternative layout
 # page '/path/to/file.html', layout: 'other_layout'
 
