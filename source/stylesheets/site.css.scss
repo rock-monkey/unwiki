@@ -112,3 +112,27 @@ img.centre, img.center {
   display: block;
   margin: auto;
 }
+
+.button {
+  display: inline-block;
+  border-radius: 4px;
+  border: 1px solid #777;
+  margin: 2px;
+  background: #ddd;
+
+  &:hover {
+    background: #ccc;
+    border-color: #555;
+  }
+
+  a {
+    padding: 4px 8px;
+    text-decoration: none;
+    color: #333;
+
+    &:hover {
+      color: #000
+    }
+  }
+}
+

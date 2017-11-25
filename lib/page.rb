@@ -209,6 +209,8 @@ class Page
         %{<ul>#{lis}</ul>}
       elsif code == 'wantedpages'
         File.exists?('tmp/wantedpages.html') ? File.read('tmp/wantedpages.html') : ''
+      elsif code == 'colour'
+        %{<span style="color: #{(params['c'] || '').split(/\W/)[0]}">#{params['text']}</span>}
       elsif WIKIGAME_SHORTCODES.include?(code) || OTHER_UNSUPPORTED_SHORTCODES.include?(code)
         # drop
       else
@@ -238,15 +240,15 @@ class Page
         classes << 'internal'
         unless Page.find_by_tag(link[0])
           # broken link; attempt obvious fixes
-          if Page.find_by_tag(link[0].capitalize)
+          if alt_page = Page.find_by_tag(link[0].capitalize)
             # fixed it!
-            link[0] = link[0].capitalize
+            url = "/#{alt_page.tag}"
             classes << 'auto-fixed'
           else
             # nope; still broken - let's try something else
             if alt_page = Page.all.select{|page| page.tag.downcase == link[0].downcase}[0]
               # phew! that worked
-              link[0] = alt_page.tag
+              url = "/#{alt_page.tag}"
               classes << 'auto-fixed'
             else
               # still nothing? damn: let's give up!
