@@ -1,5 +1,6 @@
 require 'erb'
 require 'yaml'
+require 'json'
 
 class Page
   include ERB::Util
@@ -7,6 +8,7 @@ class Page
   WIKIGAME_SHORTCODES = %w{invhasall invhasone invhasnone invpickup invdrop settoken gettoken test}
   OTHER_UNSUPPORTED_SHORTCODES = %w{nocomments}
   URL_REMAPS = {
+    'images/ajk3.jpg'                                                                       => '/images/ajk3.jpg',
     'http://www.scatmania.org/wp-content/paul_zippy.jpg'                                    => '/images/paul_zippy.jpg',
     'http://www.cleanstick.org/jon/junk/game/3waysplit.gif'                                 => '/images/wikimaze/3waysplit.gif',
     'http://www.cleanstick.org/jon/junk/game/blank.gif'                                     => '/images/wikimaze/blank.gif',
@@ -43,7 +45,24 @@ class Page
     'http://www.tromanight.co.uk/images/avatars/gallery/tromaNight/sian.jpg'                => '/images/tn/sian.jpg',
     'http://www.tromanight.co.uk/images/avatars/gallery/tromaNight/steve.jpg'               => '/images/tn/steve.jpg',
     'http://www.tromanight.co.uk/images/avatars/gallery/tromaNight/suz.jpg'                 => '/images/tn/suz.jpg',
-    'http://www.tromanight.co.uk/images/avatars/gallery/tromaNight/will_keenan.jpg'         => '/images/tn/will_keenan.jpg'
+    'http://www.tromanight.co.uk/images/avatars/gallery/tromaNight/will_keenan.jpg'         => '/images/tn/will_keenan.jpg',
+    '/TromaNightAdventure/abersign01.jpg'                                                   => '/images/tna/abersign01.jpg',
+    '/TromaNightAdventure/Artscentre01.jpg'                                                 => '/images/tna/ac01.jpg',
+    '/TromaNightAdventure/Artscentre04.jpg'                                                 => '/images/tna/ac04.jpg',
+    '/TromaNightAdventure/Artscentre05.jpg'                                                 => '/images/tna/ac05.jpg',
+    '/TromaNightAdventure/ArtscentreCafe02.jpg'                                             => '/images/tna/acc.jpg',
+    '/TromaNightAdventure/beachs2.jpg'                                                      => '/images/tna/beachs2.jpg',
+    '/TromaNightAdventure/bluebells.jpg'                                                    => '/images/tna/bluebells.jpg',
+    '/TromaNightAdventure/castle-t.jpg'                                                     => '/images/tna/castle-t.jpg',
+    '/TromaNightAdventure/clock2k2.jpg'                                                     => '/images/tna/clock2k2.jpg',
+    '/TromaNightAdventure/const_beach.jpg'                                                  => '/images/tna/const_beach.jpg',
+    '/TromaNightAdventure/const_beach_andy.jpg'                                             => '/images/tna/const_beach_andy.jpg',
+    '/TromaNightAdventure/Geography.jpg'                                                    => '/images/tna/geog.jpg',
+    '/TromaNightAdventure/harbourbtx.jpg'                                                   => '/images/tna/harbourbtx.jpg',
+    '/TromaNightAdventure/lib2-t.jpg'                                                       => '/images/tna/lib2-t.jpg',
+    '/TromaNightAdventure/mgees.jpg'                                                        => '/images/tna/mgees.jpg',
+    '/TromaNightAdventure/physics02.jpg'                                                    => '/images/tna/physics02.jpg',
+    '/TromaNightAdventure/pierdusk.jpg'                                                     => '/images/tna/pierdusk.jpg'
   }
   # friendly tags that can always be displayed as two towrd
   FRIENDLY_TAGS = %w{AberSpar AberTechnium AberystwythPier AberystwythTown AbominableSnowman AbusiveRelationship AdvancedChemistry AffectionateInsult AidsFace
@@ -151,6 +170,9 @@ class Page
     @body.gsub!('ÃƒÂ¨', "'")
     @body.gsub!('Ã¢â‚¬Â¦', "-")
     @body.gsub!('&ocirc;', 'ô')
+    @body.gsub!('Ã¢â‚¬Å“', '"')
+    @body.gsub!('Ã¢â‚¬?', '"')
+    @body.gsub!('Ã¢â‚¬Ëœ', 'h')
   end
 
   def friendly_tag
@@ -218,6 +240,23 @@ class Page
         %{<span style="color: #{(params['c'] || '').split(/\W/)[0]}">#{params['text']}</span>}
       elsif code == 'randomlink'
         %{<span class="randomlink">#{params['link'].split(/ *, */).map{|l|"[[#{l}]]"}.join('')}</span>}
+      elsif code == 'recentchanges' || code == 'recentlycommented'
+        %{[[RockMonkey]] has not been 'editable' for many years, so <em>nothing</em> on it can really be considered 'recent'.}
+      elsif code == 'usersettings'
+        %{Settings are only available to logged-in users. It is no longer possible to log in to [[RockMonkey]]. Therefore, this page does not serve any purpose.}
+      elsif code == 'mypages' || code == 'mychanges' || code == 'highscores' || code == 'ownedpages' || code == 'orphanedpages'
+        %{Lists of pages associated to you are only available to logged-in users. It is no longer possible to log in to [[RockMonkey]]. Therefore, this page does not serve any purpose.}
+      elsif code == 'interwikilist'
+        %{[[RockMonkey]] no longer supports InterWiki codes.}
+      elsif code == 'emailpassword'
+        %{It is no longer possible to log in to [[RockMonkey]]. Therefore, this page does not serve any purpose.}
+      elsif code == 'chatroom'
+        %{Long ago, there used to be a chat room here. It was later replaced by the Abnib Chat Room, which was in turn eventually replaced by a WhatsApp group.<br /><br />You can still visit the RockMonkey Chat Room via <a href="https://webchat.freenode.net/?channels=#rockmonkey">https://webchat.freenode.net/?channels=#rockmonkey</a>, but it'll probably be dead.}
+      elsif code == 'textsearch' || code == 'textsearchexpanded'
+        %{
+          <script src="/javascripts/search.js"></script>
+          <div class="textsearch">Search index loading... please wait...</div>
+        }
       elsif WIKIGAME_SHORTCODES.include?(code) || OTHER_UNSUPPORTED_SHORTCODES.include?(code)
         # drop
       else

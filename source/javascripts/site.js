@@ -8,6 +8,15 @@ document.querySelectorAll('.randomlink').forEach(r => {
   r.innerHTML = links[Math.floor(Math.random() * links.length)].outerHTML;
 })
 
+// Random page picker
+document.querySelector('.random-page').addEventListener('click', (e)=>{
+  e.preventDefault();
+  fetch('/tag-index.json').then(res=>res.json().then(tags=>{
+    const random_tag = tags[Math.floor(Math.random() * tags.length)];
+    window.location.href = '/' + random_tag;
+  }));
+})
+
 // Raw source viewer
 document.querySelector('.show-raw').addEventListener('click', (e)=>{
   e.preventDefault();

@@ -14,19 +14,40 @@ set :build_dir, '../rock-monkey/'
 # Load classes
 Dir.glob('./lib/*.rb', &method(:require))
 
+# Ensure all pages are preloaded and parsed
+pages = Page.all
+
 # Wiki pages
-Page.all.each do |page|
+pages.each do |page|
   proxy "/#{page.tag}/index.html", "/template.html", locals: { page: page }
 end
 proxy "/index.html", "/template.html", locals: { page: Page.find_by_tag('HomePage') }
 ignore "/template.html"
 
-# Write wanted pages list so that future passes can use it
-File.open('tmp/wantedpages.html', 'w') do |f|
-  f.puts '<ul>'
-  f.puts Page.missing_pages.map{|tag| "<li>#{tag}</li>" }.join("\n")
-  f.puts '</ul>'
-end
+# JSON outputs
+proxy "/tag-index.json", "/template.json", layout: nil, locals: { object: pages.map(&:tag) }
+proxy "/search-index.json", "/template.json", layout: nil, locals: { object: pages.map{|p| { tag: p.tag, body: p.body }} }
+proxy "/missing-pages.json", "/template.json", layout: nil, locals: { object: Page.missing_pages }
+ignore "/template.json"
+
+# Other pages
+proxy "/help.html", "/content.html", locals: { page: nil, title: "Help!", content: <<-EOF
+  <h2>Help! What is this place?</h2>
+  <p>
+    In the early years of the 21st century, a young man named <a href="/AndyKeohane">Andy Keohane</a> ran a wiki-based site,
+    <a href="/RockMonkey">RockMonkey</a>, primarily for his friends around <a href="/AberystwythTown">Aberystwyth</a> where
+    he was (and many of them were) <a href="/Students">students</a>.
+  </p>
+  <p>
+    The site died in late 2007 and the domain name was allowed to lapse. But in a fit of nostalgia a decade later, former
+    contributor <a href="https://danq.me/">Dan Q</a> brought it back as a static site for everybody to... umm... enjoy?
+  </p>
+  <p>
+    And here it is.
+  </p>
+EOF
+}
+ignore "/content.html"
 
 # With alternative layout
 # page '/path/to/file.html', layout: 'other_layout'
