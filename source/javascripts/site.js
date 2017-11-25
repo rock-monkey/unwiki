@@ -23,3 +23,10 @@ document.querySelector('.show-raw').addEventListener('click', (e)=>{
   document.querySelector('.show-raw').innerHTML = '';
   document.querySelector('article section').innerHTML = '<pre style="white-space: pre-wrap;">' + document.getElementById('raw').innerText + '</pre>';
 });
+
+// Wanted pages list
+document.querySelectorAll('#wanted-pages').forEach(ul => {
+  fetch ('/missing-pages.json').then(res=>res.json().then(tags=>{
+    ul.innerHTML = tags.map(tag => `<li><a href="/${tag}" class="internal broken">${tag}</a></li>`).join('')
+  }));
+});

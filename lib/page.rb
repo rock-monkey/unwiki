@@ -142,7 +142,7 @@ class Page
   end
 
   def self.missing_pages
-    @@missing_pages ||= []
+    (@@missing_pages ||= []).uniq.sort
   end
 
   def self.find_all_containing_word(word)
@@ -173,6 +173,8 @@ class Page
     @body.gsub!('Ã¢â‚¬Å“', '"')
     @body.gsub!('Ã¢â‚¬?', '"')
     @body.gsub!('Ã¢â‚¬Ëœ', 'h')
+    @body.gsub!('ÃƒÂ©', 'é')
+    @body.gsub!('ÃƒÂ¢', 'â')
   end
 
   def friendly_tag
@@ -235,7 +237,7 @@ class Page
         lis = page_tags.map{|t| %{<li>[[#{t}]]</li>} }.join('')
         %{<ul>#{lis}</ul>}
       elsif code == 'wantedpages'
-        File.exists?('tmp/wantedpages.html') ? File.read('tmp/wantedpages.html') : ''
+        %{<ul id="wanted-pages"></ul>}
       elsif code == 'colour'
         %{<span style="color: #{(params['c'] || '').split(/\W/)[0]}">#{params['text']}</span>}
       elsif code == 'randomlink'
