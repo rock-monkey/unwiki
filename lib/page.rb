@@ -144,6 +144,11 @@ class Page
 
   def initialize(row)
     @id, @tag, @time, @body, @owner, @user, @read_acl, @write_acl, @comment_acl = row['id'], row['tag'], row['time'], row['body'], row['owner'], row['user'], row['read_acl'], row['write_acl'], row['comment_acl']
+    # Pre-process by fixing windows line endings
+    @body.gsub!(/\r\n/, "\n")
+    # Fix encoding fuckups
+    @body.gsub!('Ã¢â‚¬â„¢', "'")
+    @body.gsub!('Ã¢â‚¬Â¦', "-")
   end
 
   def friendly_tag
@@ -160,8 +165,6 @@ class Page
     URL_REMAPS.each do |from, to|
       @formatted.gsub!(from, to)
     end
-    # Pre-process by fixing windows line endings
-    @formatted.gsub!(/\r\n/, "\n")
     # Downcasify all shortcodes to protect them from being turned into links (DANGER: breaks some images)
     @formatted.gsub!(/\{\{[^\} ]*/){|shortcode| shortcode.downcase}
     # Add warning if using unsupported shortcodes
@@ -169,8 +172,8 @@ class Page
     # Strip duplicate page titles
     @formatted.gsub!(/^[^\n]*=+ *#{@tag} *=+[^\n]*/, '')
     # Strip leading/trailing newlines
-    @formatted.gsub!(/^\n+/, '')
-    @formatted.gsub!(/\n+$/, '')
+    @formatted.gsub!(/\A\n+/, '')
+    @formatted.gsub!(/\n+\z/, '')
     # Process wiki code
     @formatted.gsub!(/\n+----+\n+/, '<hr />')
     @formatted.gsub!(/\n*&gt;&gt;(.+?)&gt;&gt;\n*/m, '<aside>\1</aside>')
