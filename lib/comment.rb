@@ -1,8 +1,10 @@
+require 'yaml'
+
 class Comment
   attr_reader :id, :page_tag, :time, :comment, :user
 
   def self.all
-    @@all_comments ||= DB.execute('SELECT * FROM wikka_comments').map{|row| Comment.new(row)}
+    @@all_comments ||= YAML::load(File::read('db/pages.yml')).map{|row| Comment.new(row)}
   end
 
   def self.find_all_by_page_tag(page_tag)
@@ -10,6 +12,6 @@ class Comment
   end
 
   def initialize(row)
-    @id, @page_tag, @time, @comment, @user = row
+    @id, @page_tag, @time, @comment, @user = row['id'], row['page_tag'], row['time'], row['comment'], row['user']
   end
 end

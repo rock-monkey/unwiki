@@ -1,4 +1,5 @@
 require 'erb'
+require 'yaml'
 
 class Page
   include ERB::Util
@@ -108,10 +109,13 @@ class Page
                      WillOldham WindowsLonghorn WingedAnts WinstonChurchill WonderBoy WordMonkey WordPad WrongThing WuffleNuts WychwoodBrewery YaleLock
                      YellowBook YesMinister YouLiar YouSchmuck}
 
-  attr_reader :id, :tag, :time, :body, :owner, :user, :read_acl, :write_acl, :comment_acl
+  attr_reader :id, :tag, :time, :body, :owner, :user, :read_acl, :write_acl, :comment_acl, :formatted
 
   def self.all
-    @@all_pages ||= DB.execute('SELECT * FROM wikka_pages').map{|row| Page.new(row)}
+    return @@all_pages if (@@all_pages ||= nil)
+    @@all_pages = YAML::load(File::read('db/pages.yml')).map{|row| Page.new(row)}
+    @@all_pages.each(&:generate_formatted)
+    @@all_pages
   end
 
   def self.find_by_tag(tag)
@@ -139,7 +143,7 @@ class Page
   end
 
   def initialize(row)
-    @id, @tag, @time, @body, @owner, @user, @read_acl, @write_acl, @comment_acl = row
+    @id, @tag, @time, @body, @owner, @user, @read_acl, @write_acl, @comment_acl = row['id'], row['tag'], row['time'], row['body'], row['owner'], row['user'], row['read_acl'], row['write_acl'], row['comment_acl']
   end
 
   def friendly_tag
@@ -150,47 +154,47 @@ class Page
     @comments ||= Comment.find_all_by_page_tag(@tag)
   end
 
-  def formatted
-    result = h(@body)
+  def generate_formatted
+    @formatted = h(@body)
     # Fix known broken images
     URL_REMAPS.each do |from, to|
-      result.gsub!(from, to)
+      @formatted.gsub!(from, to)
     end
     # Pre-process by fixing windows line endings
-    result.gsub!(/\r\n/, "\n")
+    @formatted.gsub!(/\r\n/, "\n")
     # Downcasify all shortcodes to protect them from being turned into links (DANGER: breaks some images)
-    result.gsub!(/\{\{[^\} ]*/){|shortcode| shortcode.downcase}
+    @formatted.gsub!(/\{\{[^\} ]*/){|shortcode| shortcode.downcase}
     # Add warning if using unsupported shortcodes
-    result = %{<div class="wikigame-shortcodes">This page used WikiGameToolkit shortcodes, which are not supported in this version of the site.</div>#{result}} if WIKIGAME_SHORTCODES.any?{|code| result =~ /\{\{#{code}/}
+    @formatted = %{<div class="wikigame-shortcodes">This page used WikiGameToolkit shortcodes, which are not supported in this version of the site.</div>#{@formatted}} if WIKIGAME_SHORTCODES.any?{|code| @formatted =~ /\{\{#{code}/}
     # Strip duplicate page titles
-    result.gsub!(/^[^\n]*=+ *#{@tag} *=+[^\n]*/, '')
+    @formatted.gsub!(/^[^\n]*=+ *#{@tag} *=+[^\n]*/, '')
     # Strip leading/trailing newlines
-    result.gsub!(/^\n+/, '')
-    result.gsub!(/\n+$/, '')
+    @formatted.gsub!(/^\n+/, '')
+    @formatted.gsub!(/\n+$/, '')
     # Process wiki code
-    result.gsub!(/\n+----+\n+/, '<hr />')
-    result.gsub!(/\n*&gt;&gt;(.+?)&gt;&gt;\n*/m, '<aside>\1</aside>')
-    result.gsub!(/''(.+?)''/, '<strong class="highlight">\1</strong>')
-    result.gsub!(/\*\*(.+?)\*\*/, '<strong>\1</strong>')
-    result.gsub!(/([^:])\/\/(.*[^:])\/\//, '\1<em>\2</em>')
-    result.gsub!(/##(.+?)##/, '<pre>\1</pre>')
-    result.gsub!(/%%(.+?)%%/, '<pre>\1</pre>')
-    result.gsub!(/\+\+(.+?)\+\+/, '<strike>\1</strike>')
-    result.gsub!(/__(.+?)__/, '<u>\1</u>')
-    result.gsub!(/@@(.+?)@@/, '<center>\1</center>')
-    result.gsub!(/\n*#%(.+?)#%\n*/, '<div class="button">\1</div>')
-    result.gsub!(/\n*={6} *(.+?) *={6}\n*/, '<h1>\1</h1>')
-    result.gsub!(/\n*={5} *(.+?) *={5}\n*/, '<h2>\1</h2>')
-    result.gsub!(/\n*={4} *(.+?) *={4}\n*/, '<h3>\1</h3>')
-    result.gsub!(/\n*={3} *(.+?) *={3}\n*/, '<h4>\1</h4>')
-    result.gsub!(/\n*={2} *(.+?) *={2}\n*/, '<h5>\1</h5>')
-    result.gsub!(/\n*(~- *([^\n]*))(\n *~-([^\n]*))*\n*/) do |list|
+    @formatted.gsub!(/\n+----+\n+/, '<hr />')
+    @formatted.gsub!(/\n*&gt;&gt;(.+?)&gt;&gt;\n*/m, '<aside>\1</aside>')
+    @formatted.gsub!(/''(.+?)''/, '<strong class="highlight">\1</strong>')
+    @formatted.gsub!(/\*\*(.+?)\*\*/, '<strong>\1</strong>')
+    @formatted.gsub!(/([^:])\/\/(.*[^:])\/\//, '\1<em>\2</em>')
+    @formatted.gsub!(/##(.+?)##/, '<pre>\1</pre>')
+    @formatted.gsub!(/%%(.+?)%%/, '<pre>\1</pre>')
+    @formatted.gsub!(/\+\+(.+?)\+\+/, '<strike>\1</strike>')
+    @formatted.gsub!(/__(.+?)__/, '<u>\1</u>')
+    @formatted.gsub!(/@@(.+?)@@/, '<center>\1</center>')
+    @formatted.gsub!(/\n*#%(.+?)#%\n*/, '<div class="button">\1</div>')
+    @formatted.gsub!(/\n*={6} *(.+?) *={6}\n*/, '<h1>\1</h1>')
+    @formatted.gsub!(/\n*={5} *(.+?) *={5}\n*/, '<h2>\1</h2>')
+    @formatted.gsub!(/\n*={4} *(.+?) *={4}\n*/, '<h3>\1</h3>')
+    @formatted.gsub!(/\n*={3} *(.+?) *={3}\n*/, '<h4>\1</h4>')
+    @formatted.gsub!(/\n*={2} *(.+?) *={2}\n*/, '<h5>\1</h5>')
+    @formatted.gsub!(/\n*(~- *([^\n]*))(\n *~-([^\n]*))*\n*/) do |list|
       items = list.gsub('~-', '<li>').gsub("\n", '</li>')
       "<ul>#{items}</ul>"
     end
-    result.gsub!(/\n/, "<br />\n")
-    result.gsub!(/(<br \/>\n){2,}</, "<br />\n<")
-    result.gsub!(/\{\{(.+?)( +(.+?)=&quot;(.+?)&quot;)*\}\}/) do |shortcode|
+    @formatted.gsub!(/\n/, "<br />\n")
+    @formatted.gsub!(/(<br \/>\n){2,}</, "<br />\n<")
+    @formatted.gsub!(/\{\{(.+?)( +(.+?)=&quot;(.+?)&quot;)*\}\}/) do |shortcode|
       code, params = shortcode[2...-2].split(/\s/, 2)
       params = (params || '').scan(/ *(.+?)=&quot;(.+?)&quot;/) || []
       params = Hash.new.tap{ |h| params.each{ |k,v| h[k] = v } }
@@ -212,7 +216,7 @@ class Page
       end
     end
     # Wiki Links (WikiWords and [[]]-syntax)
-    result.gsub!(/\[\[.+?\]\]|(?<![\/])([A-Z][a-z0-9]+)([A-Z][a-z0-9]*)+/) do |link|
+    @formatted.gsub!(/\[\[.+?\]\]|(?<![\/])([A-Z][a-z0-9]+)([A-Z][a-z0-9]*)+/) do |link|
       link = link.gsub(/[\[\[\]\]]/, '').split(' ', 2)
       link[1] ||= link[0]
       # friendlify link text if possible
@@ -257,8 +261,8 @@ class Page
     # Add comments
     if comments.length > 0
       comments_html = comments.map{|comment| %{<blockquote class="comment"><div class="body">#{comment.comment}</div><cite><a href="/#{comment.user}">#{comment.user}</a></cite></blockquote>} }
-      result = %{#{result}<div class="comments">#{comments_html.join("\n")}</div>}
+      @formatted = %{#{@formatted}<div class="comments">#{comments_html.join("\n")}</div>}
     end
-    result
+    @formatted
   end
 end
