@@ -176,7 +176,7 @@ class Page
     @formatted.gsub!(/\n*&gt;&gt;(.+?)&gt;&gt;\n*/m, '<aside>\1</aside>')
     @formatted.gsub!(/''(.+?)''/, '<strong class="highlight">\1</strong>')
     @formatted.gsub!(/\*\*(.+?)\*\*/, '<strong>\1</strong>')
-    @formatted.gsub!(/([^:])\/\/(.*[^:])\/\//, '\1<em>\2</em>')
+    @formatted.gsub!(/([^:])\/\/(.*?[^:])\/\//m, '\1<em>\2</em>')
     @formatted.gsub!(/##(.+?)##/, '<pre>\1</pre>')
     @formatted.gsub!(/%%(.+?)%%/, '<pre>\1</pre>')
     @formatted.gsub!(/\+\+(.+?)\+\+/, '<strike>\1</strike>')
@@ -224,15 +224,19 @@ class Page
       # friendlify link text if possible
       link[1] = Page.friendly_tag_for(link[1])
       classes = []
-      if link[0] =~ /^https?:/
+      if link[0] =~ /^(https?:|www\.)/
         if link[0] =~ /http:\/\/www\.rockmonkey\.org\.uk\//
           # selfref eg category page
           classes << 'internal'
           classes << 'ext-category'
           url = "/#{link[0].gsub('http://www.rockmonkey.org.uk/', '')}"
-        else
+        elsif link[0] =~ /^https?:/
           # regular external link
           url = link[0]
+          classes << 'external'
+        else
+          # external link that needs 'http://' on it
+          url = "http://#{link[0]}"
           classes << 'external'
         end
       else

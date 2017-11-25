@@ -9,16 +9,16 @@
   </section>
   <footer>
     <% if (page.owner || '') =~ /^[A-Z][a-z]/ %>
-      Created by <a href="/<%= page.owner %>"><%= page.owner %></a> |
+      Created by <a href="/<%= page.owner %>"><%= page.owner.gsub(/([A-Z])/, ' \1').strip %></a> |
     <% elsif (page.owner || '') != '' %>
-      Created by <%= page.owner %> |
+      Created by <%= page.owner.gsub(/([A-Z])/, ' \1').strip %> |
     <% end %>
     Updated
     <%= page.time.split('.')[0] %>
     <% if (page.user || '') =~ /^[A-Z][a-z]/ %>
-      by <a href="/<%= page.user %>"><%= page.user %></a>
+      by <a href="/<%= page.user %>"><%= page.user.gsub(/([A-Z])/, ' \1').strip %></a>
     <% elsif (page.user || '') != '' %>
-      by <%= page.user %>
+      by <%= page.user.gsub(/([A-Z])/, ' \1').strip %>
     <% end %>
   </footer>
 </article>
