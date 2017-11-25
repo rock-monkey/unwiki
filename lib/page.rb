@@ -175,6 +175,7 @@ class Page
     @body.gsub!('Ã¢â‚¬Ëœ', 'h')
     @body.gsub!('ÃƒÂ©', 'é')
     @body.gsub!('ÃƒÂ¢', 'â')
+    @body.gsub!('Ã¯Â¿Â½', '£')
   end
 
   def friendly_tag
