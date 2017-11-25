@@ -148,7 +148,9 @@ class Page
     @body.gsub!(/\r\n/, "\n")
     # Fix encoding fuckups
     @body.gsub!('Ã¢â‚¬â„¢', "'")
+    @body.gsub!('ÃƒÂ¨', "'")
     @body.gsub!('Ã¢â‚¬Â¦', "-")
+    @body.gsub!('&ocirc;', 'ô')
   end
 
   def friendly_tag
@@ -168,7 +170,7 @@ class Page
     # Downcasify all shortcodes to protect them from being turned into links (DANGER: breaks some images)
     @formatted.gsub!(/\{\{[^\} ]*/){|shortcode| shortcode.downcase}
     # Add warning if using unsupported shortcodes
-    @formatted = %{<div class="wikigame-shortcodes">This page used WikiGameToolkit shortcodes, which are not supported in this version of the site.</div>#{@formatted}} if WIKIGAME_SHORTCODES.any?{|code| @formatted =~ /\{\{#{code}/}
+    @formatted = %{<div class="wikigame-shortcodes"><strong>This page will not function as its author intended</strong><br />This page used WikiGameToolkit shortcodes, which are not supported in this version of the site.</div>#{@formatted}} if WIKIGAME_SHORTCODES.any?{|code| @formatted =~ /\{\{#{code}/}
     # Strip duplicate page titles
     @formatted.gsub!(/^[^\n]*=+ *#{@tag} *=+[^\n]*/, '')
     # Strip leading/trailing newlines
@@ -206,14 +208,16 @@ class Page
         image = %{<img src="#{params['url']}" alt="#{alt}" class="#{params['class']}" />}
         image = %{<a href="/#{params['link']}">#{image}</a>} if(params['link'])
         image
-      elsif code == 'category'
+      elsif code == 'category' || code == 'categorytree'
         page_tags = Page.find_all_containing_word(@tag).map(&:tag)
-        lis = page_tags.map{|t| %{<li>#{t}</li>} }.join('')
+        lis = page_tags.map{|t| %{<li>[[#{t}]]</li>} }.join('')
         %{<ul>#{lis}</ul>}
       elsif code == 'wantedpages'
         File.exists?('tmp/wantedpages.html') ? File.read('tmp/wantedpages.html') : ''
       elsif code == 'colour'
         %{<span style="color: #{(params['c'] || '').split(/\W/)[0]}">#{params['text']}</span>}
+      elsif code == 'randomlink'
+        %{<span class="randomlink">#{params['link'].split(/ *, */).map{|l|"[[#{l}]]"}.join('')}</span>}
       elsif WIKIGAME_SHORTCODES.include?(code) || OTHER_UNSUPPORTED_SHORTCODES.include?(code)
         # drop
       else

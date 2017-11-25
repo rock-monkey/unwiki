@@ -136,3 +136,18 @@ img.centre, img.center {
   }
 }
 
+.wikigame-shortcodes {
+  background: #f5bdbd;
+  padding: 15px 25px;
+  border: 2px solid #cb1212;
+  border-radius: 8px;
+}
+
+
+.randomlink a {
+  display: none;
+
+  &:first-child {
+    display: inherit;
+  }
+}
