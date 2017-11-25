@@ -72,7 +72,7 @@ class Page
                      FuriousLettuce GameOver GarethBowker GarethHopkins GeekNight GeneralElection GeographyStudents GeographyTower GestureRecognition
                      GlossyMagazine GnomishMines GoOutside GodKnows GoldFinger GoodFilms GossipMongering GreatHall GreenBook GreenTea GuineaPigs
                      HackerGame HalCruttenden HarryPotter HarukiMurakami HarvardUniversity HashBrownies HashBrowns HavingSex HayFever HayleyDrew HeadachesGirl
-                     HeartAttacks HelpfulPorters HeteroSexual HighScore HighScores HipHop HobGoblin HollywoodPizza HomePage HugeRock IgorStravinsky IlluminatiGame
+                     HeartAttacks HelpfulPorters HeteroSexual HighScore HighScores HipHop HollywoodPizza HomePage HugeRock IgorStravinsky IlluminatiGame
                      ImaginaryBand IncomeTax IndependentMusic InfernalPhone InlandRevenue InteractiveFiction InternalPhone InternationalPolitics
                      InternetExplorer IsobelCampbell JackDee JamieLidell JayenAitch JazzCigarettes JeffMinter JesusChrist JimCarrey JimMorrison JimmyCarter
                      JimmyCauty JoannaNewsom JohnParish JonAtkinson JonnyHowell JonsCar JonsTheory KeohaneClan KevinShields KitLane KnitClub KomodoDragons
