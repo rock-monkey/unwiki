@@ -37431,3 +37431,17 @@
   read_acl: ''
   write_acl: ''
   comment_acl: ''
+- id: -1
+  tag: Help
+  time: '2021-06-10 22:11:00.00.000000'
+  body: |-
+    ==== Help! What is this place? ====
+    In the early years of the 21st century, a young man named [[AndyKeohane Andy Keohane]] ran a wiki-based site, [[RockMonkey]], primarily for his friends around [[AberystwythTown Aberystwyth]] where he was (and many of them were) [[Students students]].
+    
+    The site died in late 2007 and the domain name was allowed to lapse. But in a fit of nostalgia a decade later, former contributor [[https://danq.me/ Dan Q]] brought it back as a static site for everybody to... umm... enjoy?
+    
+    Later still, Dan constructed a single-HTML-page version of the site for your offline enjoyment.
+    
+    And here it is.
+  owner: Dan Q
+  user: Dan Q

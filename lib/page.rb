@@ -1,6 +1,7 @@
 require 'erb'
 require 'yaml'
 require 'json'
+require 'base64'
 
 class Page
   include ERB::Util
@@ -163,6 +164,8 @@ class Page
 
   def initialize(row)
     @id, @tag, @time, @body, @owner, @user, @read_acl, @write_acl, @comment_acl = row['id'], row['tag'], row['time'], row['body'], row['owner'], row['user'], row['read_acl'], row['write_acl'], row['comment_acl']
+    @owner = ( (@owner ||= '') =~ /^[A-Z][a-z]/ ) ? "<a href=\"##{@owner}\">#{owner.gsub(/([A-Z])/, ' \1').strip}</a>" : owner.gsub(/([A-Z])/, ' \1').strip
+    @user = ( (@user ||= '') =~ /^[A-Z][a-z]/ ) ? "<a href=\"##{@user}\">#{user.gsub(/([A-Z])/, ' \1').strip}</a>" : user.gsub(/([A-Z])/, ' \1').strip
     # Pre-process by fixing windows line endings
     @body.gsub!(/\r\n/, "\n")
     # Fix encoding fuckups
@@ -230,9 +233,7 @@ class Page
       params = Hash.new.tap{ |h| params.each{ |k,v| h[k] = v } }
       if code == 'image'
         alt = (params['alt'] || '').gsub(/([A-Z])/, ' \1').strip # break up ALL WikiWords in alt text to prevent links being 'made' there
-        image = %{<img src="#{params['url']}" alt="#{alt}" class="#{params['class']}" />}
-        image = %{<a href="/#{params['link']}">#{image}</a>} if(params['link'])
-        image
+        %{<img src="#{params['url']}" alt="#{alt}" class="#{params['class']}" />}
       elsif code == 'category' || code == 'categorytree'
         page_tags = Page.find_all_containing_word(@tag).map(&:tag)
         lis = page_tags.map{|t| %{<li>[[#{t}]]</li>} }.join('')
@@ -274,11 +275,11 @@ class Page
       link[1] = Page.friendly_tag_for(link[1])
       classes = []
       if link[0] =~ /^(https?:|www\.)/
-        if link[0] =~ /http:\/\/www\.rockmonkey\.org\.uk\//
+        if link[0] =~ /http:\/\/www\.rockmonkey\.org\.uk\/+/
           # selfref eg category page
           classes << 'internal'
           classes << 'ext-category'
-          url = "/#{link[0].gsub('http://www.rockmonkey.org.uk/', '')}"
+          url = "/#{link[0].gsub(/http:\/\/www\.rockmonkey\.org\.uk\/+/, '#')}"
         elsif link[0] =~ /^https?:/
           # regular external link
           url = link[0]
@@ -289,19 +290,19 @@ class Page
           classes << 'external'
         end
       else
-        url = "/#{link[0]}"
+        url = "##{link[0]}"
         classes << 'internal'
         unless Page.find_by_tag(link[0])
           # broken link; attempt obvious fixes
           if alt_page = Page.find_by_tag(link[0].capitalize)
             # fixed it!
-            url = "/#{alt_page.tag}"
+            url = "##{alt_page.tag}"
             classes << 'auto-fixed'
           else
             # nope; still broken - let's try something else
             if alt_page = Page.all.select{|page| page.tag.downcase == link[0].downcase}[0]
               # phew! that worked
-              url = "/#{alt_page.tag}"
+              url = "##{alt_page.tag}"
               classes << 'auto-fixed'
             else
               # still nothing? damn: let's give up!
@@ -311,7 +312,14 @@ class Page
           end
         end
       end
+      url.gsub!(/^\/+/, '')
       %{<a href="#{url}" class="#{classes.join(' ')}">#{link[1]}</a>}
+    end
+    @formatted.gsub!(/\/?images\/[^"\\]+/) do |imgurl|
+      return unless File.exists?(filename = "source/#{imgurl}")
+      mime_type = `file --mime-type -b #{filename}`
+      base64_data = File.open(filename, "rb"){|f|Base64.strict_encode64(f.read)}
+      imgurl = "data:#{mime_type};base64,#{base64_data}"
     end
     # Add comments
     if comments.length > 0
